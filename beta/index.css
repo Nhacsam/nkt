@@ -1,0 +1,91 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: 'Courier New';
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.loading-message {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: black;
+  padding: 20px;
+}
+
+.connected-list {
+  margin: 20px auto auto; 
+  max-width: 90%;
+}
+
+.connected-list__user {
+  background:none;
+  border:none;
+  font-size:1em;
+  cursor: pointer;
+  -webkit-appearance: none;
+  color: white;
+
+  font-family: 'Courier New';
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.connected-list__user.connected-list__user--muted {
+  color: gray;
+}
+
+.submit-btn {
+  display: none;
+}
+
+.nickname-form,
+.message-form {
+  margin: 20px auto 0 auto;
+  max-width: 90%;
+  display: flex;
+  align-items: center;
+}
+
+.nickname-form__input,
+.message-form__input {
+  vertical-align: top;
+  outline: none;
+  overflow: hidden;
+  border: none;
+  background: rgba(0,0,0,0);
+
+  padding-left: 8px;
+  flex: 1;
+
+  color: #C0C0C0;
+  font-size: 13px;
+  font-family: 'Courier New';
+  font-weight: bold;
+}
+
+
+.message-form__label,
+.nickname-form__label {
+  font-size: 13px;
+  font-family: 'Courier New';
+  font-weight: bold;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  color: #C0C0C0;
+}
+
+
+
+#chat {
+  margin: 0px auto auto;
+  max-width: 90%;
+}
+
+#list {
+  margin: 20px auto auto;
+  max-width: 90%;
+}

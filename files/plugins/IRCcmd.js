@@ -1,13 +1,13 @@
 var IRCcmd = function () {
-    
+
     var _self = this;
     var _awayList = new Array();
     var _cmdList = {};
     var _who = [];
 	var _history = [], _historyPtr = 0;
-    
+
     _self.reversed = true;
-	
+
 	$('textarea').on('keydown', function (e) {
 		if(e.keyCode == 38) // UP
 			if(_historyPtr > -1 && _history.length > _historyPtr)
@@ -17,12 +17,12 @@ var IRCcmd = function () {
 				$('textarea').val(_history[_history.length-(--_historyPtr)]);
 
 	});
-	
+
 	$('body').on( 'change keyup paste cut', 'textarea', function (){
 		if($(this).val().indexOf('\n') == 0) $(this).val($(this).val().substring(1));
 		$(this).height(0).height(this.scrollHeight);
 	}).find( 'textarea' ).change();
-    
+
     var parseCmd = function(msg) {
 		_history.push(msg);
 		_historyPtr = 0;
@@ -32,7 +32,7 @@ var IRCcmd = function () {
         var origMsg = msg;
         msg = msg.substring(1);
         var cmd, params;
-        
+
         if (msg.indexOf(' ') >= 0) {
             cmd = msg.substring(0, msg.indexOf(' '));
             params = msg.substring(msg.indexOf(' ')+1);
@@ -48,7 +48,7 @@ var IRCcmd = function () {
             return '';
         }
     }
-    
+
     var parseRecivedCmd = function(msg, nick) {
         if (msg.charAt(0) != '/') {
             checkNotAway(nick);
@@ -57,7 +57,7 @@ var IRCcmd = function () {
         var origMsg = msg;
         msg = msg.substring(1);
         var cmd, params;
-        
+
         if (msg.indexOf(' ') >= 0) {
             cmd = msg.substring(0, msg.indexOf(' '));
             params = msg.substring(msg.indexOf(' ')+1);
@@ -65,15 +65,15 @@ var IRCcmd = function () {
             cmd = msg ;
             params = '';
         }
-        
+
         if (_cmdList[cmd]) {
             return _cmdList[cmd].func(cmd, params, nick) ;
         } else {
             return origMsg;
         }
     }
-    
-    
+
+
     var onUsersRefresh = function (tag) {
         for (var i in _awayList) {
             if (! $.chat.isMuted(_awayList[i]) ) {
@@ -84,7 +84,7 @@ var IRCcmd = function () {
             }
         }
     }
-    
+
     /**
      * Add a command to the chat
      * @param object cmdInfos :
@@ -94,9 +94,9 @@ var IRCcmd = function () {
     _self.addCmd = function (cmdInfos, name) {
         _cmdList[name] = cmdInfos;
     };
-    
-    
-    
+
+
+
     /**
      * Action of command /away
      * @param string cmd Command
@@ -113,7 +113,7 @@ var IRCcmd = function () {
             return '/' + cmd + ' ' + params;
         }
     };
-    
+
     /**
      * Check if an user is nto away any more
      * @param string nick
@@ -126,7 +126,7 @@ var IRCcmd = function () {
             }
         }
     }
-    
+
     /**
      * Action of commands /exit and /quit
      * @param string cmd Command
@@ -141,7 +141,7 @@ var IRCcmd = function () {
         document.location = 'http://www.9gag.com';
         return '';
     };
-    
+
     /**
      * Action of command /hrlp
      * @param string cmd Command
@@ -150,16 +150,16 @@ var IRCcmd = function () {
      * @return string Message to send to the others
      */
     var help = function (cmd, params, source) {
-        
-        // /!\ reversed chat 
+
+        // /!\ reversed chat
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
         if (! _self.reversed) {
             $.chat.write('Liste des commandes : ', '', true);
         }
-        
+
         for ( var name in _cmdList) {
             obj = _cmdList[name];
             if (obj.proto && obj.description ) {
@@ -172,14 +172,14 @@ var IRCcmd = function () {
                 }
             }
         }
-        
+
         if (_self.reversed) {
             $.chat.write('Liste des commandes : ', '', true);
         }
-        
+
         return '';
     };
-    
+
     /**
      * Action of commands /ignore and /unignore
      * @param string cmd Command
@@ -188,11 +188,11 @@ var IRCcmd = function () {
      * @return string Message to send to the others
      */
     var toggleIgnore = function (cmd, params, source) {
-        
+
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
         var user = params;
         if (! user ) {
             var obj = _cmdList[cmd];
@@ -204,15 +204,15 @@ var IRCcmd = function () {
             $.chat.write( user + ' does not exist.', '');
             return '';
         }
-        
+
         var muted = $.chat.isMuted(user);
-        
+
         if ((muted && cmd == 'unignore') || ( !muted && cmd == 'ignore' )){
             $.chat.mute(user);
         }
         return '';
     };
-    
+
     /**
      * Action of command /logout and /leave
      * @param string cmd Command
@@ -225,10 +225,10 @@ var IRCcmd = function () {
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
         location.reload();
     };
-    
+
     /**
      * Action of command /nick
      * @param string cmd Command
@@ -237,7 +237,7 @@ var IRCcmd = function () {
      * @return string Message to send to the others
      */
     var nick = function (cmd, params, source) {
-        
+
         if(! source ) {
             if (params) {
                 var lastNick = $.chat.myNick();
@@ -253,7 +253,7 @@ var IRCcmd = function () {
             return '';
         }
     };
-    
+
     /**
      * Action of command /me
      * @param string cmd Command
@@ -269,7 +269,7 @@ var IRCcmd = function () {
             return '';
         }
     };
-    
+
     /**
      * Action of command /who
      * @param string cmd Command
@@ -278,11 +278,11 @@ var IRCcmd = function () {
      * @return string Message to send to the others
      */
     var who = function (cmd, params, source) {
-        
+
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
         var nicks = $.chat.nicks();
 		if(! _self.reversed) $.chat.write('Connected users:', '');
         for (var i in  nicks) {
@@ -293,7 +293,7 @@ var IRCcmd = function () {
 		if(_self.reversed) $.chat.write('Connected users:', '');
         return '';
     };
-    
+
     /**
      * Action of command /saywho
      * @param string cmd Command
@@ -302,7 +302,7 @@ var IRCcmd = function () {
      * @return string Message to send to the others
      */
     var saywho = function (cmd, params, source) {
-        
+
         if (params && params.indexOf(' ') >= 0) {
             var user = params.substring(0, params.indexOf(' '));
             var msg = params.substring(params.indexOf(' ')+1);
@@ -311,7 +311,7 @@ var IRCcmd = function () {
         }
         return '';
     };
-    
+
 	/**
      * Action of command /clear
      * @param string cmd Command
@@ -323,16 +323,16 @@ var IRCcmd = function () {
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
 		setTimeout(function(){
 			$('pre:not(:first)').remove();
 			$('br:not(:first)').remove();
 		}, 500);
         return '';
     };
-	
+
     /**
-     * Action of command /mp /w /notice 
+     * Action of command /mp /w /notice
      * @param string cmd Command
      * @param string params End of the command
      * @param object source User who send the command (null if current)
@@ -342,11 +342,11 @@ var IRCcmd = function () {
         if (source) {
             return '/'+cmd+' '+params
         }
-        
+
         if (params && params.indexOf(' ') >= 0) {
             var user = params.substring(0, params.indexOf(' '));
             var msg = params.substring(params.indexOf(' ')+1);
-            
+
             try {
                 $.chat.sendPrivate(user, msg);
             } catch (e) {
@@ -359,7 +359,7 @@ var IRCcmd = function () {
         }
         return '';
     };
-    
+
     /**
      * Action of command /plugin
      * @param string cmd Command
@@ -371,12 +371,12 @@ var IRCcmd = function () {
         if (source) {
             return '/'+cmd+' '+params
         }
-        
-        
+
+
         if (!params) {
             params = 'list';
         }
-        
+
         var action, pluginName;
         if (params.indexOf(' ') >= 0) {
             action = params.substring(0, params.indexOf(' '));
@@ -385,9 +385,9 @@ var IRCcmd = function () {
             action = params;
             pluginName = '';
         }
-        
+
         switch (action) {
-            
+
 			case 'ls':
             case 'list':
                 var list = $.pluginApi.pluginList(),
@@ -402,7 +402,7 @@ var IRCcmd = function () {
 					unloaded_str=(unloaded_str)?unloaded_str+'</span> <span style="font-style:'+style+'">'+list.unloaded[i]:'<span style="font-style:'+style+'">'+list.unloaded[i];
 					if(i == list.unloaded.length-1) unloaded_str+='</span>';
 				}
-                
+
                 if (_self.reversed) {
                     $.chat.write("\t" + unloaded_str, '', true);
                     $.chat.write('Unloaded : ', '', true);
@@ -415,7 +415,7 @@ var IRCcmd = function () {
                     $.chat.write("\t" + unloaded_str, '', true);
                 }
                 break;
-            
+
 			case 'ad':
             case 'add':
 				var tempName = $.trim(params);
@@ -433,7 +433,7 @@ var IRCcmd = function () {
 							type: 'POST',
 							data: JSON.stringify(sendPlugin),
 							contentType: 'application/json',
-							url: '/plugin-add',						
+							url: '/plugin-add',
 							success: function(data) {
 								$('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
 									$.chat.send('<script>'+file+'</script>');
@@ -444,7 +444,7 @@ var IRCcmd = function () {
 					}
 				}catch(e){$.chat.write("Invalid syntax ! Command is /plugin add MyPluginName MyPluginCode",'');}
 				break;
-				
+
 			case 'rm':
             case 'remove':
 				var tempName = $.trim(params);
@@ -452,18 +452,18 @@ var IRCcmd = function () {
 				var name = afterName.split(' ')[0];
 				var sendPlugin = {};
 				sendPlugin.pluginName = name;
-				
+
 				$.ajax({
 					type: 'POST',
 					data: JSON.stringify(sendPlugin),
 					contentType: 'application/json',
-					url: '/plugin-remove',						
+					url: '/plugin-remove',
 					success: function(data) {
 						$.chat.send('/me removed plugin '+name);
 					}
 				});
 				break;
-				
+
 			case 'rs':
             case 'restore':
 				var tempName = $.trim(params);
@@ -471,14 +471,14 @@ var IRCcmd = function () {
 				var name = afterName.split(' ')[0];
 				var sendPlugin = {};
 				sendPlugin.pluginName = name;
-				
+
 				$.chat.send('/plugin ud '+name);
-				
+
 				$.ajax({
 					type: 'POST',
 					data: JSON.stringify(sendPlugin),
 					contentType: 'application/json',
-					url: '/plugin-rollback',						
+					url: '/plugin-rollback',
 					success: function(data) {
 						$('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
 							$.get( $.pluginApi.getPath(name, false), function( data ) {
@@ -489,7 +489,7 @@ var IRCcmd = function () {
 					}
 				});
 				break;
-				
+
 			case 'ld':
             case 'load':
 				try {
@@ -499,7 +499,7 @@ var IRCcmd = function () {
                     $.chat.write(s, '', true);
                 }
                 break;
-                
+
 			case 'ud':
             case 'unload':
 				try {
@@ -509,7 +509,7 @@ var IRCcmd = function () {
                     $.chat.write(s, '', true);
                 }
                 break;
-				
+
 			case 'vi':
             case 'view':
 				var url = false;
@@ -523,21 +523,21 @@ var IRCcmd = function () {
 						});
 					});
 				else $.chat.write('Plugin '+pluginName+' not found !', '');
-				
+
                 break;
-                
-            
+
+
             default:
                 var obj = _cmdList[cmd];
                 $.chat.write('Usage : ' + obj.proto, '', true);
                 break;
         }
-        
+
         return '';
     }
-    
-    
-    
+
+
+
     _cmdList = {
 		clear: { func: clear, description: 'Clears all messages', proto:'/clear'},
         away: { func: away, description: 'Indique une absence', proto:'/away &lt;message&gt;'},
@@ -555,13 +555,13 @@ var IRCcmd = function () {
         mp : { func: mp, description:'Envoie un message privé', proto:'(/w|/mp|/notice) &lt;pseudo&gt; [message]'},
         notice : {func: mp, proto:'(/w|/mp|/notice) &lt;pseudo&gt; [message]'},
         w : {func: mp, proto:'(/w|/mp|/notice) &lt;pseudo&gt; [message]'},
-        plugin : { 
-            func: plugin, 
-            description:'Plugins management. Only plugins in <i>italic</i> can be added/removed/replaced/restored. "restore" restores a plugin to a random backup version', 
+        plugin : {
+            func: plugin,
+            description:'Plugins management. Only plugins in <i>italic</i> can be added/removed/replaced/restored. "restore" restores a plugin to a random backup version',
             proto:'/plugin (list|load|unload|add|remove|restore|view) | (ls|ld|ud|ad|rm|rs|vi) [plugin name] [plugin code]'
         },
     }
-    
+
     // listeners
     _self.name = 'IRCcmd' ;
     _self.onSend = parseCmd;

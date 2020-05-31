@@ -19,15 +19,25 @@ app
   .use(logfmt.requestLogger())
   .use('/files', express.static(path.join(__dirname, 'files')))
   .use(bodyParser.json())
-  .use(bodyParser.urlencoded({ extended: true }))
-  .get('*', function (req, res, next) {
-    if (
-      req.headers['x-forwarded-proto'] != 'https' &&
-      process.env.NODE_ENV !== 'dev'
-    ) {
-      res.redirect('https://nkt.herokuapp.com' + req.url);
-    } else next();
-  })
+  .use(bodyParser.urlencoded({ extended: true }));
+
+// nkt v2
+app.use('/beta', express.static(path.join(__dirname, 'beta')));
+app.get('/port', (req, res) => res.json({ port }));
+
+// redirect on https
+app.get('*', function (req, res, next) {
+  if (
+    req.headers['x-forwarded-proto'] != 'https' &&
+    process.env.NODE_ENV !== 'dev'
+  ) {
+    res.redirect('https://nkt.herokuapp.com' + req.url);
+    return;
+  }
+  next();
+});
+
+app
   .get('/', function (req, res) {
     res.header(
       'Cache-Control',
@@ -183,6 +193,10 @@ io.on('connection', function (socket) {
 
   socket.on('ping2', function (data) {
     if (data) socket.broadcast.emit('ping2', data);
+  });
+
+  socket.on('nktp2', function (data) {
+    if (data) socket.broadcast.emit('nktp2', data);
   });
 });
 

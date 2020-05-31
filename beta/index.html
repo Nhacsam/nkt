@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+
+    <div id="loading-message" class="loading-message">
+      Chargement ...
+    </div>
+
+    <div class="main-content" id="main">
+     <div class="connected-list" id="list">
+       <span class="connected-list__legend">
+         <span class="connected-list__user">Plugged</span> /
+         <span class="connected-list__user connected-list__user--muted">Unplugged</span> 
+       </span>
+       <span class="connected-list__separator"> : </span>
+       
+       <span class="connected-list__empty">No other users.</span>
+       <span class="connected-list-users" id="connected-list-users" />
+     </div> 
+
+     <form action="/" method="post" class="nickname-form" id="nickname-form">
+       <label class="nickname-form__label" for="nickname-field">
+         Public username&gt; 
+       </label>
+       <input class="nickname-form__input" type="text" name="nickname" id="nickname-field" />
+       <button type="submit" class="nickname-form__submit submit-btn">Envoyer</button>
+     </form>
+
+     <form action="/" method="post" class="message-form" id="message-form">
+       <label class="message-form__label" for="message-field">
+         Your username&gt; 
+       </label>
+       <textarea class="message-form__input" type="text" name="message" id="message-field">
+       </textarea>
+       <button type="submit" class="message-form__submit submit-btn">Envoyer</button>
+     </form>
+
+     <div id="chat" class="chat"></div>
+
+    <script src="/files/jquery-3.2.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/files/cryptico.min.js"></script>
+
+    <script src="Socket.js"></script>
+    <script src="Layout.js"></script>
+    <script src="main.js"></script>
+    <script src="EventEmitter.js"></script>
+    <script src="UserList.js"></script>
+  </body>
+</html>
