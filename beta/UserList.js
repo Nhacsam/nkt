@@ -14,12 +14,12 @@ class UserList {
     this.eventEmitter.emit('userListChanged', this.users);
   }
 
-  saveUser(key, nickName) {
+  saveUser(key, alias, nickName) {
     if (!key) {
       return;
     }
 
-    const savedUser = this.users.find((user) => user.publicKey === key);
+    const savedUser = this.users.find((user) => user.alias === alias);
     if (savedUser) {
       savedUser.lastMessagesDistance = new Date() - savedUser.lastMessage;
       savedUser.lastMessage = new Date();
@@ -32,6 +32,7 @@ class UserList {
       lastMessage: new Date(),
       lastMessagesDistance: 1000,
       muted: false,
+      alias,
     };
 
     this.users.push(user);
