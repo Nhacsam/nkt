@@ -141,42 +141,19 @@ class Layout {
    * Write a message on the window
    * @param string msg Message to display
    * @param string nickName Source of the message (nickname)
-   * @param bollean notEscape set to true to not escape HTML (optional)
+   * @param boolean notEscape set to true to not escape HTML (optional)
    */
   writeMessage(msg, nickName, notEscape) {
     var escaped = msg;
     if (!notEscape) {
       escaped = escapeAndAddWarning(msg);
-    }
-    // var event = {
-    //   msg: escaped,
-    //   nickName: nickName,
-    // };
-    // launchEvent('write', event);
 
-    //     if (!event.msg) {
-    //       return;
-    //     }
-
-    // new line
-    $('#chat').prepend($(document.createElement('br')));
-
-    // display the text
-    $('#chat').prepend(
-      $(document.createElement('pre'))
-        .css('font-family', 'Courier New')
-        .css('display', 'inline')
-        .css('font-weight', 'bold')
-        .css('word-break', 'break-all')
-        .css('word-wrap', 'break-word')
-        .css('white-space', '-moz-pre-wrap')
-        .css('white-space', 'pre9')
-        .css('white-space', 'pre')
-        .css('white-space', 'pre-wrap')
-        .css('font-size', '90%')
-        .css('color', '#C0C0C0')
-        .html(nickName + '&gt; ' + msg)
-    );
+    const $message = $('<div class="message" />');
+    $message
+      .append($('<div class="message__nickname" />').html(nickName))
+      .append($('<div class="message__separator" />').html('&gt;'))
+      .append($('<div class="message__content" />').html(msg));
+    $('#chat').prepend($message);
   }
 }
 

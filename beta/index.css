@@ -58,7 +58,7 @@ body {
   border: none;
   background: rgba(0,0,0,0);
 
-  padding-left: 8px;
+  padding-left: 10px;
   flex: 1;
 
   color: #C0C0C0;
@@ -88,4 +88,19 @@ body {
 #list {
   margin: 20px auto auto;
   max-width: 90%;
+}
+
+.message {
+  display: flex;
+
+  font-size: 13px;
+  font-family: 'Courier New';
+  font-weight: bold;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  color: #C0C0C0;
+}
+
+.message__separator {
+  margin-right: 10px;
 }
