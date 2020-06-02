@@ -147,6 +147,7 @@ class Layout {
     var escaped = msg;
     if (!notEscape) {
       escaped = escapeAndAddWarning(msg);
+    }
 
     const $message = $('<div class="message" />');
     $message
