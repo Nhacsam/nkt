@@ -104,3 +104,7 @@ body {
 .message__separator {
   margin-right: 10px;
 }
+
+.message__content_escaped_link {
+	cursor: pointer;
+}

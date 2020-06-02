@@ -10,25 +10,6 @@ function escapeHTML(string) {
   return pre.innerHTML;
 }
 
-function escapeAndAddWarning(msg) {
-  var escaped = escapeHTML(msg);
-  var disp = msg;
-
-  if (escaped != msg) {
-    disclaimer[unsafe.length] =
-      'This message (' + escaped + ') may be unsafe, click to show';
-    showHide[unsafe.length] = true;
-    disp =
-      '<span id="' +
-      unsafe.length +
-      '" onmouseover="this.style.cursor=\'pointer\';" onclick="$(this).html(showHide[this.id]?\'Unsafe content (click to hide):<br />\'+unsafe[this.id]:disclaimer[this.id]);showHide[this.id]=!showHide[this.id];">' +
-      disclaimer[unsafe.length] +
-      '</span>';
-    unsafe.push(msg);
-  }
-  return disp;
-}
-
 class Layout {
   constructor(eventEmitter, socket, userList) {
     this.eventEmitter = eventEmitter;
@@ -137,6 +118,36 @@ class Layout {
     $('#message-field').val('').focus();
   }
 
+  escapeAndAddWarning(msg) {
+    var escaped = escapeHTML(msg);
+    if (escaped === msg) {
+      return escaped;
+    }
+    return this.getEscapeWarningTag(escaped, msg);
+  }
+
+  getEscapeWarningTag(escaped, originalMessage) {
+    const withWarning =
+      'This message (' + escaped + ') may be unsafe, click to show';
+    return $('<a />')
+      .addClass('message__content_escaped_link')
+      .addClass('message__content_escaped_link--escaped')
+      .html(withWarning)
+      .data('escaped', true)
+      .click(function () {
+        const isEscaped = $(this).data('escaped');
+        $(this).data('escaped', !isEscaped);
+
+        if (isEscaped) {
+          $(this)
+            .html(originalMessage)
+            .removeClass('message__content_escaped_link--escaped');
+        } else {
+          $(this).html(withWarning);
+        }
+      });
+  }
+
   /**
    * Write a message on the window
    * @param string msg Message to display
@@ -144,16 +155,16 @@ class Layout {
    * @param boolean notEscape set to true to not escape HTML (optional)
    */
   writeMessage(msg, nickName, notEscape) {
-    var escaped = msg;
+    let escaped = msg;
     if (!notEscape) {
-      escaped = escapeAndAddWarning(msg);
+      escaped = this.escapeAndAddWarning(msg);
     }
 
     const $message = $('<div class="message" />');
     $message
       .append($('<div class="message__nickname" />').html(nickName))
       .append($('<div class="message__separator" />').html('&gt;'))
-      .append($('<div class="message__content" />').html(msg));
+      .append($('<div class="message__content" />').html(escaped));
     $('#chat').prepend($message);
   }
 }
