@@ -16,19 +16,27 @@ class Layout {
     this.socket = socket;
     this.eventEmitter.subscribe(this.onEvent.bind(this));
     this.userList = userList;
+    this.setupPluginToggle();
+  }
+
+  setupPluginToggle() {
+    document.getElementById('plugin-toggle').addEventListener('click', () => {
+      document
+        .getElementById('plugin-list')
+        .classList.toggle('plugin-list--hidden');
+    });
   }
 
   onEvent(event, eData) {
-    if (event === 'write') {
-      return this.writeMessage(eData.data.payload, eData.nickName);
-    }
-
-    if (event === 'ready') {
-      return this.onSocketReady();
-    }
-
-    if (event == 'userListChanged') {
-      return this.updateUserList(eData);
+    switch (event) {
+      case 'write':
+        return this.writeMessage(eData.data.payload, eData.nickName);
+      case 'ready':
+        return this.onSocketReady();
+      case 'userListChanged':
+        return this.updateUserList(eData);
+      case 'pluginListChanged':
+        return this.updatePluginList(eData);
     }
   }
 
@@ -166,6 +174,24 @@ class Layout {
       .append($('<div class="message__separator" />').html('&gt;'))
       .append($('<div class="message__content" />').html(escaped));
     $('#chat').prepend($message);
+  }
+
+  updatePluginList(plugins) {
+    const tag = document.getElementById('plugin-list');
+
+    plugins.forEach((plugin) => {
+      const name = plugin.name;
+
+      const container = document.createElement('div');
+      container.classList.add('plugin');
+
+      const nameTag = document.createElement('div');
+      nameTag.classList.add('plugin__name');
+      nameTag.append(name);
+
+      container.append(nameTag);
+      tag.append(container);
+    });
   }
 }
 

@@ -40,14 +40,24 @@
      </form>
 
      <div id="chat" class="chat"></div>
+    </div>
+    <div class="plugins-container">
+      <button id="plugin-toggle" class="plugin-toggle">Plugins</button>
+
+      <div id="plugin-list" class="plugin-list plugin-list--hidden">
+      </div>
+    </div>
 
     <script src="/files/jquery-3.2.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
+    <script src="main.js"></script>
     <script src="Socket.js"></script>
     <script src="Layout.js"></script>
-    <script src="main.js"></script>
     <script src="EventEmitter.js"></script>
     <script src="UserList.js"></script>
+    <script src="PluginManager.js"></script>
+    <script src="Plugin.js"></script>
+    <script src="debugPlugins/abbePierre.js"></script>
   </body>
 </html>
