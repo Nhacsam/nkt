@@ -13,14 +13,14 @@ class AbbePierre extends Plugin {
     ) {
       if (
         msg.indexOf('la bai') > -1 ||
-        msg.indexOf('la bÃ©') > -1 ||
+        msg.indexOf('la bé') > -1 ||
         msg.indexOf('la bei') > -1 ||
         msg.indexOf("l'abai") > -1 ||
-        msg.indexOf("l'abÃ©") > -1 ||
+        msg.indexOf("l'abé") > -1 ||
         msg.indexOf("l'abei") > -1
       )
         setTimeout(function () {
-          $.chat.write("Parce que l'abbÃ© Pierre est mort!", 'qrthur');
+          $.chat.write("Parce que l'abbé Pierre est mort!", 'qrthur');
         }, 500);
     }
 

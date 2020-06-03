@@ -1,9 +1,21 @@
 class Plugin {
-  start() {}
+  constructor() {
+    this.active = false;
+  }
 
-  stop() {}
+  start() {
+    this.active = true;
+  }
+
+  stop() {
+    this.active = false;
+  }
 
   onEvent(eventName, event) {
+    if (!this.active) {
+      return;
+    }
+
     switch (eventName) {
       case 'send':
         return this.onSend(event.payload);
@@ -16,17 +28,11 @@ class Plugin {
     }
   }
 
-  onSend(msg) {
-    return msg;
-  }
+  onSend(msg) {}
 
-  onReceived(msg, nick) {
-    return msg;
-  }
+  onReceived(msg, nick) {}
 
-  onWrite(msg, nick) {
-    return msg;
-  }
+  onWrite(msg, nick) {}
 
   onNewUser(nick) {}
 

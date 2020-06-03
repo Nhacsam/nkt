@@ -178,6 +178,7 @@ class Layout {
 
   updatePluginList(plugins) {
     const tag = document.getElementById('plugin-list');
+    tag.innerHTML = '';
 
     plugins.forEach((plugin) => {
       const name = plugin.name;
@@ -185,10 +186,21 @@ class Layout {
       const container = document.createElement('div');
       container.classList.add('plugin');
 
-      const nameTag = document.createElement('div');
+      const toggleTag = document.createElement('input');
+      toggleTag.classList.add('plugin__checkbox');
+      toggleTag.setAttribute('type', 'checkbox');
+      toggleTag.setAttribute('id', name);
+      toggleTag.addEventListener('click', () =>
+        this.eventEmitter.emit('togglePlugin', name)
+      );
+      toggleTag.checked = plugin.active;
+
+      const nameTag = document.createElement('label');
       nameTag.classList.add('plugin__name');
+      nameTag.setAttribute('for', name);
       nameTag.append(name);
 
+      container.append(toggleTag);
       container.append(nameTag);
       tag.append(container);
     });

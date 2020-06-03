@@ -57,7 +57,7 @@ class PluginManager {
   }
 
   togglePlugin(name) {
-    if (this.loadPlugin.includes(name)) {
+    if (this.activePlugins.includes(name)) {
       this.unloadPlugin(name);
     } else {
       this.loadPlugin(name);
@@ -65,6 +65,9 @@ class PluginManager {
   }
 
   onEvent(event, data) {
+    if (event === 'togglePlugin') {
+      this.togglePlugin(data);
+    }
     Object.keys(this.plugins).forEach((name) => {
       const plugin = this.plugins[name];
       plugin.onEvent(event, data);
