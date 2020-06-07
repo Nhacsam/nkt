@@ -260,6 +260,7 @@
       addInList('NewMsgTitle', true);
       addInList('NSAdemon', true);
       addInList('console', true);
+      */
       addInList('githubPlugins', true);
 
       //
