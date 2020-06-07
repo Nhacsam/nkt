@@ -11,15 +11,18 @@ class UserList {
       return;
     }
     user.isMuted = !user.isMuted;
+    if (window.nkt.userList[user.id]) {
+      window.nkt.userList[user.id].dontSendTo = user.isMuted;
+    }
     this.eventEmitter.emit('userListChanged', this.users);
   }
 
-  saveUser(key, alias, nickName) {
-    if (!key) {
+  saveUser(id, nickName) {
+    if (!id) {
       return;
     }
 
-    const savedUser = this.users.find((user) => user.alias === alias);
+    const savedUser = this.users.find((user) => user.id === id);
     if (savedUser) {
       savedUser.lastMessagesDistance = new Date() - savedUser.lastMessage;
       savedUser.lastMessage = new Date();
@@ -27,12 +30,11 @@ class UserList {
     }
 
     const user = {
+      id,
       nickName,
-      publicKey: key,
       lastMessage: new Date(),
       lastMessagesDistance: 1000,
       muted: false,
-      alias,
     };
 
     this.users.push(user);
@@ -48,7 +50,12 @@ class UserList {
   refreshUserList() {
     const now = new Date();
     const newList = this.users.filter((user) => {
-      return now - user.lastMessage < 2000 + user.lastMessagesDistance * 4;
+      const isAlive =
+        now - user.lastMessage < 2000 + user.lastMessagesDistance * 4;
+      if (!isAlive && window.nkt.userList[user.id]) {
+        window.nkt.userList[user.id].isUnreachable = true;
+      }
+      return isAlive;
     });
 
     const listChanged = newList.length !== this.users.length;

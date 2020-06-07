@@ -1,4 +1,4 @@
-var port = Number(process.env.PORT || 5000);
+var port = Number(process.env.PORT || 3000);
 
 var http = require('http');
 var path = require('path');
@@ -18,7 +18,6 @@ app
 
 // nkt v2
 app.use('/beta', express.static(path.join(__dirname, 'beta')));
-app.get('/port', (req, res) => res.json({ port }));
 
 // redirect on https
 app.get('*', function (req, res, next) {
@@ -46,7 +45,7 @@ app
   })
   .get('/port.js', function (req, res) {
     res.send('var port=' + port + ';');
-  })
+  });
 
 io.on('connection', function (socket) {
   socket.on('new_msg2', function (data) {

@@ -163,6 +163,10 @@ class Layout {
    * @param boolean notEscape set to true to not escape HTML (optional)
    */
   writeMessage(msg, nickName, notEscape) {
+    if (!msg) {
+      console.log('empty message');
+      return;
+    }
     let escaped = msg;
     if (!notEscape) {
       escaped = this.escapeAndAddWarning(msg);
@@ -206,4 +210,3 @@ class Layout {
     });
   }
 }
-

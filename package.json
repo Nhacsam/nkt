@@ -5,7 +5,7 @@
   "main": "web.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "dbconnstr=postgresql://localhost:5432/nkt NODE_ENV=dev nodemon .",
+    "start:dev": "bittorrent-tracker --ws & dbconnstr=postgresql://localhost:5432/nkt NODE_ENV=dev nodemon .",
     "dbinit": "dbconnstr=postgresql://localhost:5432/nkt node ./dbinit.js"
   },
   "keywords": [
@@ -21,6 +21,7 @@
     "socket.io": "^2.0.4"
   },
   "devDependencies": {
+    "bittorrent-tracker": "^9.15.0",
     "nodemon": "^2.0.4"
   }
 }
