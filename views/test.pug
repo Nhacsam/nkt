@@ -10,11 +10,10 @@ html
 				div(id='list')
 				div(id='typing')
 					pre(id='nick') Public username&gt; 
-					textarea(rows='1')
+					textarea(rows='1' value='Loading dependencies...')
 		div(id='chat')
 		span(id='port',style='display:none') #{port}
 		script(src='/files/jquery-3.2.1.min.js')
 		script(src='/files/style.js')
 		script(src='/socket.io/socket.io.js')
-		script(src='/files/cryptico.min.js')
 		script(src='/files/socket_test.js')

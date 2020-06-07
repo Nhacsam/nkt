@@ -4,8 +4,9 @@ var IRCcmd = function () {
     var _awayList = new Array();
     var _cmdList = {};
     var _who = [];
-	var _history = [], _historyPtr = 0;
+    var _history = [], _historyPtr = 0;
 
+    var allowedFrameOrigin = 'https://fabiendaou.github.io';
     _self.reversed = true;
 
 	$('textarea').on('keydown', function (e) {
@@ -418,50 +419,128 @@ var IRCcmd = function () {
 
 			case 'ad':
             case 'add':
+                // TODO LATER : error on not logged to github or expired token
+                try{
+                var hasGithubPluginsLoaded = $.pluginApi.pluginList().loaded.indexOf('githubPlugins') > -1;
 				var tempName = $.trim(params);
 				var afterName = tempName.substring(tempName.indexOf(' ')+1);
-				var name = afterName.split(' ')[0].replace(/\W/g, '');
-				var file = afterName.substring(afterName.indexOf(' ')+1);
+                var name = afterName.split(' ')[0].replace(/\W/g, '');
+                var afterPrivate = afterName.substring(afterName.indexOf(' ')+1);
+                var isPrivate = afterPrivate.split(' ')[0].replace(/\W/g, '') !== 'public';
+				var file = afterPrivate.substring(afterPrivate.indexOf(' ')+1);
 				var sendPlugin = {};
 				sendPlugin.pluginName = name;
 				sendPlugin.pluginFile = file;
-				try{
-					if(afterName.split(' ')[0].charAt(0) == '$') $.chat.write("Don't forget the plugin name ! Command is /plugin add MyPluginName MyPluginCode",'');
+				//try{
+					if(afterPrivate.split(' ')[0].charAt(0) == '$') $.chat.write("Don't forget the plugin name ! Command is /plugin add  MyPluginName public|private MyPluginCode",'');
 					else if(file.split('name')[1].split(',')[0].indexOf("'"+name+"'") <0 && file.split('name')[1].split(',')[0].indexOf('"'+name+'"') < 0) $.chat.write('Plugin names mismatch. Declared: '+name+', Coded'+file.split('name')[1].split(',')[0],'');
 					else{
-						$.ajax({
-							type: 'POST',
-							data: JSON.stringify(sendPlugin),
-							contentType: 'application/json',
-							url: '/plugin-add',
-							success: function(data) {
-								$('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
-									$.chat.send('<script>'+file+'</script>');
-									$.chat.send('/me uploaded plugin '+name+', click previous message to actuate changes, then load it if unloaded.');
-								});
-							}
-						});
+                        if (hasGithubPluginsLoaded) {
+                            var ifr = document.getElementById('githubPluginsFrame').contentWindow;
+                            ifr.postMessage(JSON.stringify({ action: "create", data: {
+                                name,
+                                isPrivate,
+                                text: file
+                            } }), allowedFrameOrigin);
+                            //$.chat.send('<script>'+file+'</script>');
+                            //$.chat.send('/me uploaded plugin '+name+', click previous message to actuate changes, then load it if unloaded.');
+                        } else {
+                            $.ajax({
+                                type: 'POST',
+                                data: JSON.stringify(sendPlugin),
+                                contentType: 'application/json',
+                                url: '/plugin-add',
+                                success: function(data) {
+                                    $('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
+                                        $.chat.send('<script>'+file+'</script>');
+                                        $.chat.send('/me uploaded plugin '+name+', click previous message to actuate changes, then load it if unloaded.');
+                                    });
+                                }
+                            });
+                        }
 					}
-				}catch(e){$.chat.write("Invalid syntax ! Command is /plugin add MyPluginName MyPluginCode",'');}
-				break;
+				}catch(e){
+                    console.error(e);
+                    $.chat.write("Invalid syntax ! Command is /plugin add MyPluginName public|private MyPluginCode",'');
+                }
+                break;
+
+                case 'up':
+                case 'update':
+                    // TODO LATER : error on not logged to github or expired token
+                    try{
+                    var hasGithubPluginsLoaded = $.pluginApi.pluginList().loaded.indexOf('githubPlugins') > -1;
+                    var tempName = $.trim(params);
+                    var afterName = tempName.substring(tempName.indexOf(' ')+1);
+                    var name = afterName.split(' ')[0].replace(/\W/g, '');
+                    var afterPrivate = afterName.substring(afterName.indexOf(' ')+1);
+                    var isPrivate = afterPrivate.split(' ')[0].replace(/\W/g, '') !== 'public';
+                    var file = afterPrivate.substring(afterPrivate.indexOf(' ')+1);
+                    var sendPlugin = {};
+                    sendPlugin.pluginName = name;
+                    sendPlugin.pluginFile = file;
+                    //try{
+                        if(afterPrivate.split(' ')[0].charAt(0) == '$') $.chat.write("Don't forget the plugin name ! Command is /plugin update  MyPluginName public|private MyPluginCode",'');
+                        else if(file.split('name')[1].split(',')[0].indexOf("'"+name+"'") <0 && file.split('name')[1].split(',')[0].indexOf('"'+name+'"') < 0) $.chat.write('Plugin names mismatch. Declared: '+name+', Coded'+file.split('name')[1].split(',')[0],'');
+                        else{
+                            if (hasGithubPluginsLoaded) {
+                                var ifr = document.getElementById('githubPluginsFrame').contentWindow;
+                                ifr.postMessage(JSON.stringify({ action: "update", data: {
+                                    name,
+                                    isPrivate,
+                                    text: file
+                                } }), allowedFrameOrigin);
+                                //$.chat.send('<script>'+file+'</script>');
+                                //$.chat.send('/me uploaded plugin '+name+', click previous message to actuate changes, then load it if unloaded.');
+                            } else {
+                                $.ajax({
+                                    type: 'POST',
+                                    data: JSON.stringify(sendPlugin),
+                                    contentType: 'application/json',
+                                    url: '/plugin-add',
+                                    success: function(data) {
+                                        $('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
+                                            $.chat.send('<script>'+file+'</script>');
+                                            $.chat.send('/me uploaded plugin '+name+', click previous message to actuate changes, then load it if unloaded.');
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }catch(e){$.chat.write("Invalid syntax ! Command is /plugin update MyPluginName public|private MyPluginCode",'');}
+                    break;
 
 			case 'rm':
             case 'remove':
+                // TODO LATER : error on not logged to github or expired token
+                try{
+                var hasGithubPluginsLoaded = $.pluginApi.pluginList().loaded.indexOf('githubPlugins') > -1;
 				var tempName = $.trim(params);
 				var afterName = tempName.substring(tempName.indexOf(' ')+1);
-				var name = afterName.split(' ')[0];
+                var name = afterName.split(' ')[0];
+                var afterPrivate = afterName.substring(afterName.indexOf(' ')+1);
+                var isPrivate = afterPrivate.split(' ')[0].replace(/\W/g, '') !== 'public';
 				var sendPlugin = {};
 				sendPlugin.pluginName = name;
-
-				$.ajax({
-					type: 'POST',
-					data: JSON.stringify(sendPlugin),
-					contentType: 'application/json',
-					url: '/plugin-remove',
-					success: function(data) {
-						$.chat.send('/me removed plugin '+name);
-					}
-				});
+				if (hasGithubPluginsLoaded) {
+                    var ifr = document.getElementById('githubPluginsFrame').contentWindow;
+                    ifr.postMessage(JSON.stringify({ action: "delete", data: {
+                        name,
+                        isPrivate
+                    } }), allowedFrameOrigin);
+                    $.chat.send('/me removed plugin '+name);
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        data: JSON.stringify(sendPlugin),
+                        contentType: 'application/json',
+                        url: '/plugin-remove',
+                        success: function(data) {
+                            //$.chat.send('/me removed plugin '+name);
+                        }
+                    });
+                }
+                }catch(e){$.chat.write("Invalid syntax ! Command is /plugin rm MyPluginName public|private",'');}
 				break;
 
 			case 'rs':
@@ -512,16 +591,47 @@ var IRCcmd = function () {
 
 			case 'vi':
             case 'view':
+                var hasGithubPluginsLoaded = $.pluginApi.pluginList().loaded.indexOf('githubPlugins') > -1;
+                var tempName = $.trim(params);
+                var afterName = tempName.substring(tempName.indexOf(' ')+1);
+                var name = afterName.split(' ')[0];
+                var afterPrivate = afterName.substring(afterName.indexOf(' ')+1);
+                var isPrivate = afterPrivate.split(' ')[0].replace(/\W/g, '') !== 'public';
 				var url = false;
 				$('#plugin-container').find('a').each(function() {
-					if($(this).attr('href').indexOf(pluginName+'.js') > -1) url = $(this).attr('href');
+					if($(this).attr('href').indexOf(name+'.js') > -1) url = $(this).attr('href');
 				});
-				if(url)
-					$('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
-						$.get( url, function( data ) {
-							$.chat.write($.chat.escape(data),'', true);
-						});
-					});
+				if(url) {
+                    if (hasGithubPluginsLoaded) {
+                        window.removeEventListener('message', $.chat.githubViewListener);
+                        $.chat.githubViewListener = (event) => {
+                            if (event.origin !== "https://fabiendaou.github.io")
+                                return;
+                            try {
+                                const eventData = JSON.parse(event.data);
+                                if (eventData.event === 'pluginTextSuccessful' && eventData.data.name === name) {
+                                    $.chat.write($.chat.escape(eventData.data.text),'', true);
+                                } else if (eventData.event === 'pluginTextFailed' && eventData.data.name === name) {
+                                    console.error(eventData.data.reason);
+                                }
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        };
+                        window.addEventListener("message", $.chat.githubViewListener, false);
+                        var ifr = document.getElementById('githubPluginsFrame').contentWindow;
+                        ifr.postMessage(JSON.stringify({ action: "getText", data: {
+                            name,
+                            isPrivate
+                        } }), allowedFrameOrigin);
+                    } else {
+                        $('<iframe src="/PluginManager.js" />').css('display','none').appendTo($('body')).on('load', function(){
+                            $.get( url, function( data ) {
+                                $.chat.write($.chat.escape(data),'', true);
+                            });
+                        });
+                    }
+                }
 				else $.chat.write('Plugin '+pluginName+' not found !', '');
 
                 break;
@@ -558,7 +668,7 @@ var IRCcmd = function () {
         plugin : {
             func: plugin,
             description:'Plugins management. Only plugins in <i>italic</i> can be added/removed/replaced/restored. "restore" restores a plugin to a random backup version',
-            proto:'/plugin (list|load|unload|add|remove|restore|view) | (ls|ld|ud|ad|rm|rs|vi) [plugin name] [plugin code]'
+            proto:'/plugin (list|load|unload|add|update|remove|restore|view) | (ls|ld|ud|ad|up|rm|rs|vi) [plugin name] [public|private] [plugin code]'
         },
     }
 
