@@ -16,7 +16,10 @@ class PluginManager {
       return;
     }
     const plugin = new PluginConstructor();
+    this.addPluginInstance(plugin);
+  }
 
+  addPluginInstance(plugin) {
     if (!plugin.name) {
       console.error('New plugin added without a name');
       return;
@@ -82,5 +85,15 @@ class PluginManager {
     }));
   }
 
-  registerV1Plugin(plugin) {}
+  registerV1Plugin(plugin) {
+    console.log('register v1');
+    if (! plugin) {
+      return;
+    }
+    const { name } = plugin;
+    if (! name || this.plugins[name]) {
+      return;
+    }
+    this.addPluginInstance(new V1PluginAdapter(plugin));
+  }
 }

@@ -20,9 +20,15 @@ class Plugin {
       case 'send':
         return this.onSend(event.payload);
       case 'received':
-        return this.onReceived(event.data.payload, event.nickName);
+        if (event.data.type === 'message' && event.data.payload) {
+        return this.onMessageReceived(event.data.payload, event.nickName);
+        }
+        return this.onReceived(event.data, event.nickName);
       case 'write':
-        return this.onWrite(event.data.payload, event.nickName);
+        if (! event.data.payload) {
+          return;
+        }
+        return this.onWrite(event.data, event.nickName);
       case 'newUser':
         this.onNewUser(event);
     }
@@ -30,9 +36,11 @@ class Plugin {
 
   onSend(msg) {}
 
-  onReceived(msg, nick) {}
+  onReceived(data, nick) {}
 
-  onWrite(msg, nick) {}
+  onMessageReceived(msg, nick) {}
+
+  onWrite(data, nick) {}
 
   onNewUser(nick) {}
 
