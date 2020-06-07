@@ -3,20 +3,20 @@ var launch = function() {
 
 	var swit = false;
 	var nosubmit = false;
-	
+
 	var port = $('#port').html();
 	var pubKeys = [], cutLink = [], as = [];
 	var nicks = [];
-	
+
 	var ticks = 0, userTicks1 = [], userTicks2 = [], switchTicks = [];
 	var emptyList = 0;
 	var lastaction = 0;
-	
+
 	var key, pubKey, socket;
 	var listener = [];
-	
+
 	var myNick="";
-    
+
     /**
      * Escape an html string
      * @param string string String to escape
@@ -28,12 +28,12 @@ var launch = function() {
 		pre.appendChild(text);
 		return pre.innerHTML;
 	};
-	
-	
+
+
 	var escapeAndAddWarning = function(msg) {
 	    var escaped = escapeHTML(msg);
 	    var disp = msg;
-	    
+
 		if(escaped != msg) {
 			disclaimer[unsafe.length] = 'This message ('+escaped+') may be unsafe, click to show';
 			showHide[unsafe.length]  =true;
@@ -42,8 +42,8 @@ var launch = function() {
 		}
 		return disp;
 	}
-	
-	
+
+
 	/**
 	 * Display a rceived message
 	 * @param object data received data
@@ -51,21 +51,28 @@ var launch = function() {
 	var disp_msg=function(data){
 		if(typeof data !== 'object' || !data.pubKeySrc || !data.nickSrc || !data.msg
 		//|| !data.pubKeyDest
-		) return;
+		) {
+		    if (data.type === 'message') {
+			// compatibility v2
+			save_key(data.nickSrc, atob(data.nickSrc));
+			write_msg(data.payload,  atob(data.nickSrc));
+		    }
+		    return;
+		}
 		if(myNick){
 			save_key(data.pubKeySrc, atob(data.nickSrc));
 			if(
-				//data.pubKeyDest == pubKey && 
+				//data.pubKeyDest == pubKey &&
 				!cutLink[pubKeys.indexOf(data.pubKeySrc)]){
 				//var msg = cryptico.decrypt(data.msg, key), disp, escaped;
-				
+
 				// call plugin functions
 				//msg.nickName = atob(data.nickSrc);
 				data.nickName = atob(data.nickSrc);
 				data.plaintext = data.msg;
 				//launchEvent('received', msg);
 				launchEvent('received', data);
-				
+
 				// write on window
 				//write_msg(msg.plaintext, atob(data.nickSrc));
 				write_msg(data.msg,  atob(data.nickSrc));
@@ -80,8 +87,8 @@ var launch = function() {
 			});
 		}
 	};
-	
-	
+
+
 	/**
 	 * Write a message on the window
 	 * @param string msg Message to display
@@ -89,7 +96,7 @@ var launch = function() {
 	 * @param bollean notEscape set to true to not escape HTML (optional)
 	 */
 	var write_msg = function (msg, nickName, notEscape) {
-	    
+
 	    var escaped = msg ;
 	    if (! notEscape){
 	        escaped = escapeAndAddWarning(msg);
@@ -99,16 +106,16 @@ var launch = function() {
 	        nickName: nickName
 	    };
 	    launchEvent('write', event);
-	    
+
 	    if (!event.msg) {
 	        return ;
 	    }
-	    
+
 	    // new line
 		$('#chat').prepend(
 			$(document.createElement('br'))
 		);
-		
+
 		// display the text
 		$('#chat').prepend(
 			$(document.createElement('pre'))
@@ -126,30 +133,30 @@ var launch = function() {
 			.html(event.nickName+'&gt; '+event.msg)
 		);
 	};
-	
-	
+
+
 	/**
 	 * Toggle mute an user
 	 * @param (integer|string) Nickname or id of the user
 	 * @return boolean muted
 	 */
 	var mute = function( id ) {
-	    
+
 	    if (typeof id == 'string') {
 	        id = parseInt( $('#list a:contains('+id+')').attr('id') );
 	    }
-	    
+
 	    if ( id == undefined || !pubKeys[id]) {
 		    throw "User does not exist.";
 	    }
-	    
+
 	    var elmt = $('#list a#'+id);
 		elmt.css('color', (cutLink[id]) ? 'white' : 'gray');
 		cutLink[id] = (cutLink[id]) ? false : true ;
 		if (window.nkt.userList[pubKeys[id]]) window.nkt.userList[pubKeys[id]].dontSendTo = cutLink[id];
 	    return cutLink[id];
 	};
-	
+
 	/**
 	 * Get if an user is muted
 	 * @param (integer|string) Nickname or id of the user
@@ -161,8 +168,8 @@ var launch = function() {
 	    }
 	    return cutLink[id];
 	}
-	
-	
+
+
 	/**
 	 * Send a message to the others
 	 * @param string msg
@@ -174,7 +181,7 @@ var launch = function() {
 	    }
 	    launchEvent('send', event);
 	    msg = event.msg;
-	    
+
 	    if (!msg) {
 	        return ;
 		}
@@ -183,7 +190,7 @@ var launch = function() {
 		data.msg = msg;
 		window.nkt.sendEncryptedMessage(data);
 	    /*
-		
+
 		for(var i in pubKeys){
 			if(pubKeys[i] && !cutLink[i]){
 				var encrypted = cryptico.encrypt(msg,pubKeys[i]);
@@ -198,13 +205,13 @@ var launch = function() {
 		*/
 		disp_msg(data);
 	};
-	
+
 	/**
 	 * Send a private msg to an user
 	 * @param (integer|string) Nickname or id of the user
 	 */
 	var send_private = function (id, msg) {
-	    
+
 	    var nick ;
 	    if (typeof id == 'string') {
 	        nick = id;
@@ -212,13 +219,13 @@ var launch = function() {
 	    } else {
 	        nick = $('#list a#' + id).text();
 	    }
-	    
+
    	    if ( id == undefined || !pubKeys[id]) {
    			throw "User does not exist.";
 	    }
 
 	    //var encrypted = cryptico.encrypt( '(private) ' + msg, pubKeys[id]);
-		
+
 	    var data = {
 	        nickSrc : btoa(myNick),
 	        pubKeySrc : pubKey,
@@ -232,7 +239,7 @@ var launch = function() {
 
 		/*
 	    socket.emit('new_msg2',data);
-	    
+
 	    encrypted = cryptico.encrypt( '(private - ' + nick + ') ' + msg, pubKey);
 	    data.msg = encrypted.cipher;
 		data.pubKeyDest = pubKey;
@@ -240,9 +247,9 @@ var launch = function() {
 		//data.msg = '(private - ' + nick + ') ' + msg;
 	    //disp_msg(data);
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Loggin on the chat
 	 * @param string nickname
@@ -251,7 +258,7 @@ var launch = function() {
 	    var data = {};
 	    //var prevNick = myNick;
 	    var debug = true;
-	    
+
 	    nickname = nickname.replace(/\n/g,'');
 		nickname = escapeHTML(nickname);
 		nickname = nickname.replace(/ /g,'');
@@ -279,7 +286,7 @@ var launch = function() {
 			}, 100);
         }
 	};
-	
+
 	/**
 	 * Refresh the userList
 	 * using public keys received
@@ -315,10 +322,10 @@ var launch = function() {
 			}
 			setTimeout(function(){userList(true);}, 50);
 		}
-		
+
 		if(!cancelEvent) launchEvent('userListRefreshed', $('#list'));
 	};
-	
+
 	/**
 	 * Saved a received public key
 	 * @param string pubKeySrc Public key received
@@ -333,7 +340,7 @@ var launch = function() {
 				userTicks1[index] = ticks;
 				userTicks2[index] = ticks;
 				switchTicks[index] = true;
-				
+
 	            launchEvent('newUser', nickName);
 			}else{
 				var index = pubKeys.indexOf(pubKeySrc);
@@ -346,7 +353,7 @@ var launch = function() {
 			userList();
 		}
 	};
-	
+
 	/**
 	 * Initialise the crypto stuff
 	 */
@@ -355,7 +362,7 @@ var launch = function() {
 	    //pubKey = cryptico.publicKeyString(key);
 		pubKey = window.nkt.mySwarm.address();
 	};
-	
+
 	var socket_connect = function() {
 		/*
 	    var host = $(location).attr('protocol').replace(/^http/, 'ws')+'//'+$(location).attr('hostname');
@@ -363,12 +370,12 @@ var launch = function() {
 		    host='ws://' + $(location).attr('hostname');
 	    if($(location).attr('hostname')=='localhost')
 		    host='http://'+$(location).attr('hostname')+':'+port;
-	    
+
 		socket = io(host);
 		*/
 		socket = window.nkt.websocket;
 	};
-	
+
 	/**
 	 * Subscribe on chat events
 	 * @param function callback
@@ -376,7 +383,7 @@ var launch = function() {
 	var subscribe = function (callback) {
         listener.push(callback);
     }
-	
+
 	/**
 	 * Launch an event for listeners
 	 * @param string name Name of the event
@@ -387,8 +394,8 @@ var launch = function() {
 	        listener[i](name, data);
 	    }
 	}
-	
-	
+
+
 	// submit on enter pressed
 	$('textarea').first().keydown(function(e){
 		var code = e.which || e.keyCode || 0;
@@ -420,15 +427,15 @@ var launch = function() {
 		$('textarea').val('').focus();
 		return false;
 	});
-	
-	
+
+
 	// mute on click on a nickname
 	$('#list').on('click', 'a', function() {
 	    var id = parseInt($(this).attr('id'));
 	    mute(id);
 	});
-	
-	
+
+
 	// change the color on ESC pressed
 	$(window).keyup(function(e){
 		if(e.which == 27){
@@ -438,13 +445,13 @@ var launch = function() {
 			swit = !swit;
 		}
 	});
-	
-	
+
+
 	setTimeout(function(){
 		initialize_crypto();
 		nkt_ready++;
 	}, 0);
-	
+
 	setTimeout(function(){
 		socket_connect();
 		// Sockets events
@@ -453,7 +460,13 @@ var launch = function() {
 		});
 		window.addEventListener('nktclearmessagereceived', (event) => {
 			let data = event.detail;
-			if(typeof data !== 'object' || !data.pubKeySrc || !data.nickSrc) return;
+			if(typeof data !== 'object' || !data.pubKeySrc || !data.nickSrc) {
+			    if (data && data.type === 'ping') {
+				// compatibility v2
+				save_key(data.nickSrc, atob(data.nickSrc));
+			    }
+			    return;
+			}
 			if(!event.detail.ping) return;
 			save_key(data.pubKeySrc, atob(data.nickSrc));
 		});
@@ -466,7 +479,7 @@ var launch = function() {
 		*/
 		nkt_ready++;
 	}, 0);
-	
+
 	setTimeout(function(){
 		//var plugins = document.createElement('script');
 		//plugins.src = '/PluginManager.js';
@@ -474,7 +487,7 @@ var launch = function() {
 		$('<script src="/files/PluginManager.js" ></script>').appendTo($('body'));
 		nkt_ready++;
 	}, 0);
-	
+
 	nkt_checkReady = setInterval(function(){
 		if(nkt_ready > 2){
 			userList();
@@ -514,20 +527,20 @@ var launch = function() {
 		    //},30000);
 		}
 	}, 10);
-	
-	/*$('#chat').append(	
-		'<br /><iframe sandbox="allow-same-origin allow-scripts allow-popups allow-forms" seamless src="https://rocky-depths-4612.herokuapp.com/" ></iframe>'		
+
+	/*$('#chat').append(
+		'<br /><iframe sandbox="allow-same-origin allow-scripts allow-popups allow-forms" seamless src="https://rocky-depths-4612.herokuapp.com/" ></iframe>'
 	);
 	$('iframe').css('border','none');
 	$('iframe').css('height','300px');
 	$('iframe').css('width','300px');
 	$('iframe').css('overflow','hidden');
 	$('iframe').toggle(); */
-    
-    
+
+
     // API
     this.subscribe = subscribe;
-    
+
     this.login = login;
     this.send = send_msg;
     this.write = write_msg;

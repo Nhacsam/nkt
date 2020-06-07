@@ -73,6 +73,13 @@ class Socket {
 
   onReceiveData(data, nickName) {
     data.nickName = nickName;
+    if (data.plaintext) {
+      //compatibility v1
+      data.plugin = null;
+      data.type = 'message';
+      data.payload = data.plaintext;
+    }
+
     this.eventEmitter.emit('received', {
       nickName,
       data,
@@ -91,9 +98,7 @@ class Socket {
     window.nkt.sendClearMessage({
       ping: true,
       nickSrc: btoa(this.nickName),
-      data: {
-        type: 'ping',
-      },
+      type: 'ping',
     });
     this.eventEmitter.emit('ping');
   }

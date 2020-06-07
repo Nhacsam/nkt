@@ -56,9 +56,6 @@ io.on('connection', function (socket) {
     if (data) socket.broadcast.emit('ping2', data);
   });
 
-  socket.on('nktp2', function (data) {
-    if (data) socket.broadcast.emit('nktp2', data);
-  });
   socket.on('corev2', function (data) {
     if (data) socket.broadcast.emit('corev2', data);
   });
