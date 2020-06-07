@@ -1,4 +1,13 @@
 (() => {
+  const createMessageEvent = (eventName, data, message) => {
+    return new CustomEvent(eventName, {
+      detail: {
+        message: message || data.msgData,
+        from: data.msgFrom,
+      },
+    });
+  };
+
   const genRandomStr = () => {
     return toHexString(window.crypto.getRandomValues(new Uint32Array(10)));
   };
@@ -352,24 +361,6 @@
         msgBugoutEk: window.nkt.mySwarm.ek,
         msgDate: new Date().getTime().toString(),
       });
-
-      /*
-            // Broadcast known peers
-            for (let i in window.nkt.userList) {
-                resilientSend({
-                    msgType: 'newSwarmAddress',
-                    msgFrom: i,
-                    msgDate: (new Date()).getTime().toString()
-                });
-            }
-            */
-
-      /*
-            window.nkt.websocket.emit(window.nkt.websocketEventName, {
-                msgType: 'newSwarmAddress',
-                msgFrom: window.nkt.mySwarm.address()
-            });
-            */
       setTimeout(beginSwarmAddrBroadcast, 5000);
     }
   };
@@ -381,6 +372,9 @@
   const handleMessageFromSwarm = (address, message) => {
     //logIfVerbose('RECEIVED MESSAGE FROM SWARM');
     //logIfVerbose(message);
+    if (message.msgFrom === window.nkt.mySwarm.address()) {
+      return;
+    }
     if (Object(message) === message && message.msgFrom) {
       setClientAddressForSwarmPeer(
         address,
@@ -821,11 +815,13 @@
       listeners: {
         nktencryptedmessagereceived: (event) => {
           const cont = window.dispatchEvent(
-            new CustomEvent('nktdisplaymessage', { detail: event.detail })
+            new CustomEvent('nktdisplaymessage', {
+              detail: event.detail.message,
+            })
           );
           if (!cont) return;
           const pre = document.createElement('pre');
-          pre.textContent = event.detail;
+          pre.textContent = event.detail.message;
           document.getElementById('chat').appendChild(pre);
         },
         nktsendingmessage: (event) => {
@@ -894,7 +890,7 @@
         const msg = e.detail.data;
         if (msg.msgType !== 'humanMessage') return;
         window.dispatchEvent(
-          new CustomEvent('nktclearmessagereceived', { detail: msg.msgData })
+          createMessageEvent('nktclearmessagereceived', e.detail.data)
         );
       } catch (e) {}
     });
@@ -922,9 +918,11 @@
             const msg = JSON.parse(plaintext);
             if (msg.msgType !== 'humanMessage') return;
             window.dispatchEvent(
-              new CustomEvent('nktencryptedmessagereceived', {
-                detail: msg.msgData,
-              })
+              createMessageEvent(
+                'nktencryptedmessagereceived',
+                e.detail.data,
+                msg.msgData
+              )
             );
           } catch (e) {
             logIfVerbose(e);
@@ -947,10 +945,9 @@
         e.detail.data.msgTo === e.detail.data.msgFrom
       )
         return;
+
       window.dispatchEvent(
-        new CustomEvent('nktencryptedmessagereceived', {
-          detail: e.detail.data.msgData,
-        })
+        createMessageEvent('nktencryptedmessagereceived', e.detail.data)
       );
     });
 
